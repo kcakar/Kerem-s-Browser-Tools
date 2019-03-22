@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "Kerem's browser tools",
+  "description": "Works only on Apple pages.",
+  "version": "1.0.007",
+  "permissions": [
+    "storage"
+  ],
+  "icons": { 
+          "128": "icon.png" 
+        },  
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.apple.com/*"],
+      "js": [ "content_script.js"],
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ],
+  "options_page": "settings.html",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  }
+}

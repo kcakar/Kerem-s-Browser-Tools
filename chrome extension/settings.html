@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Kerem's toolbox</title>
+</head>
+
+<body>
+    <h2>Info</h2>
+    <hr>
+    <p>Works only on Apple pages.</p>
+    <p>An extension with bunch of tools. You can set the extension for your locale by right clicking the extension icon and selecting 'Options'.</p>
+
+    <h3><b>Setting variables</h3>
+    <ul>
+        <li>
+            <p><b>locale_short_variable</b>: This is what you have after www.apple.com/</p>
+            <p>Example: www.apple.com/tr/ -> tr</p>
+        </li>
+        <li>
+            <p><b>page_locale_variable</b>: Used for checking og:locale meta element.</p>
+            <p>Example: tr_TR</p>
+        </li>
+        <li>
+            <p><b>page_lang_variable</b>: Used for checking lang attributes.</p>
+            <p>Example: tr-TR</p>
+        </li>
+        <li>
+            <p><b>sitename_variable</b>: Used for checking site name meta element</p>
+            <p>Example: Apple (KR)</p>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+    <p><b>support_link_variable</b>: Used for checking support links</p>
+    <p>Example: ko-kr</p>
+    <p>https://support.apple.com/ko-kr/ipad</p>
+
+    <p><b>popup duration</b>: Sets how long the passive popup stays on screen. 0 to turn off the popup.</p>
+
+    <h3><b>Shortcuts</b></h3>
+        <ul>
+            <li>Command+shift+click: If you are on the US page, opens your locale's page. If you are on your locale's page, opens US page.</li>
+            <li>Command+option+click: Opens clicked elements background picture in a new tab.</li>
+        </ul>
+    </p>
+    <hr>
+
+    <h2>GEO Settings</h2>
+    <Label>locale_short_variable</Label><br>
+    <input id="locale_short_variable" type="text"/><br>
+
+    <Label>page_locale_variable</Label><br>
+    <input id="page_locale_variable" type="text"/><br>
+
+    <Label>page_lang_variable</Label><br>
+    <input id="page_lang_variable" type="text"/><br>
+
+    <Label>sitename_variable</Label><br>
+    <input id="sitename_variable" type="text"/><br>
+
+    <Label>support_link_variable</Label><br>
+    <input id="support_link_variable" type="text"/><br>
+
+    <Label>popup duration</Label><br>
+    <input id="popup_remove_variable" type="text"/><br>
+    <button id="save">Save settings</button>
+    <div id="status2"></div>
+
+
+<br><br><br><br>
+    <hr>
+    <p>Add new link to whitelist:</p>
+    <input id="newLink" type="text"/>
+    <button id="add">Add</button>
+    <div id="status"></div>
+
+    <h1> White-listed links:<h1>
+    <div>
+        <ul id="whitelist-ul">
+
+        </ul>
+    </div>
+
+    <script src="settings.js"></script>
+    <style>
+        p{
+            font-size:12px;
+            font-weight: normal;
+        }
+    </style>
+</body>
+
+</html>
