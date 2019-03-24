@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Kerem's browser tools",
   "description": "Works only on Apple pages.",
-  "version": "1.0.007",
+  "version": "1.0.008",
   "permissions": [
     "storage"
   ],

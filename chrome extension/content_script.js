@@ -1,11 +1,3 @@
-//requests
-// const locale_variable="/tr/";
-// const locale_short_variable="tr";
-// const page_locale_variable="tr_TR";
-// const page_lang_variable="tr-TR";
-// const sitename_variable="Apple (Türkiye)";
-// const popup_remove_variable=300000;
-
 let locale_variable="/tr/";
 let locale_short_variable="tr";
 let page_locale_variable="tr_TR";
@@ -153,7 +145,6 @@ function checkLinks(countOnly){
    let links= document.querySelectorAll("a:not(.ac-gf-directory-column-section-link):not(.ac-gn-link):not(.ac-gf-footer-locale-link):not(.ac-gf-footer-legal-link):not([href='https://www.belgemodul.com/sirket/329'])");
 
    let whitelist=[];
-   console.log("check")
 
    chrome.storage.sync.get({
     whitelist:[]
@@ -166,13 +157,6 @@ function checkLinks(countOnly){
 
     links.forEach(link=>{
         //media ise tpl-tr olcak
-        if(link.href.indexOf("support.apple")!==-1)
-        {   
-            console.log(support_link_variable)
-            console.log(link.href)
-            console.log(link.href.indexOf(support_link_variable)==-1)
-        }
-
         if(whitelist.indexOf(link.href)!==-1)
         {
             whitelistLinks.push(link);
@@ -353,6 +337,12 @@ function bindWhitelistEvent()
         txtCheck.oninput    = txtCheck.onchange;
     }
 
+    let dimensionCheck=document.getElementById("dimension-filter");
+    if(dimensionCheck)
+    {
+        dimensionCheck.addEventListener("click",e=>filterByDimension(dimensionCheck));
+    }
+
     let qaCheckBtn=document.getElementsByClassName("qaCheck");
     [].forEach.call(qaCheckBtn, function (el) {
       el.addEventListener("click",x=>qaCheckPromises(false));
@@ -363,6 +353,18 @@ function bindWhitelistEvent()
       el.addEventListener("click",x=>checkLinks(false));
     });
     
+}
+
+function filterByDimension(el){
+        let elements=document.querySelectorAll(".cssCheck:not(.different-size)");
+        elements.forEach(e=>{
+            if(el.checked){
+                e.classList.add("hidden");
+            }
+            else{
+                e.classList.remove("hidden");
+            }
+        })
 }
 
 function qaCheck(compareResult,isPassive){
@@ -1274,9 +1276,6 @@ function checkCssRules(rule)
     }
 }
 
-// function markDifferentSizes(){
-//     let elements=document.querySelectorAll(".cssCheck:not")
-// }
 
 function fillDimension(img)
 {
@@ -1288,8 +1287,14 @@ function fillDimension(img)
             let targetElement=document.querySelector("[data-css-url='"+target+"']");
             if(targetElement)
             {
-                document.querySelector("[data-css-url='"+target+"']").innerHTML=img.naturalWidth+"x"+img.naturalHeight;
+                let imageSizeSpan=document.querySelector("[data-css-url='"+target+"']")
+                imageSizeSpan.innerHTML=img.naturalWidth+"x"+img.naturalHeight;
+                imageSizeSpan.classList.add("dimension-ready");
+                if(imageSizeSpan.parentElement.getElementsByClassName("dimension-ready").length>=2){
+                    markDifferentDimensions(targetElement.parentElement);
+                }
             }
+
         }
     }
 
@@ -1308,6 +1313,14 @@ function fillDimension(img)
             }
         }
         
+    }
+}
+
+function markDifferentDimensions(parentElement){
+    let sizeLocale=parentElement.getElementsByClassName("size-locale")[0].innerHTML;   
+    let sizeUS=parentElement.getElementsByClassName("size-us")[0].innerHTML;   
+    if(sizeLocale!==sizeUS){
+        parentElement.classList.add("different-size");
     }
 }
 
@@ -1356,20 +1369,20 @@ function generateCssCheckHtml(){
         
         notLocalisedHtml+=`
             <li class='orange cssCheck' style='max-width:550px' data-css-find-attr='${image}${usImageUrl}'>
-            <span class='css-image-size' data-css-url='${image}'></span>
-            <span style='color:red;font-size:20px;font-weight: bold;'>
-                <a target="_blank" href='${image}'>${image}</a>
-            </span>
-            <span class='css-image-size' data-css-url='${usImageUrl}'></span>
-            <span style='color:red;font-size:20px;font-weight: bold;'>
-                <a target="_blank" href='${usImageUrl}'>${usImageUrl}</a>
-            </span>
-            <div style='css-image-comparison'>
-                <button class='compareImages' data-tr-image="${image}" data-us-image="${usImageUrl})" style='border:1px solid black;border-radius:5px;'>Compare Images</button><br><br>
-                <img class='css-auto-dimension' style='max-width:500px' src='${image}' >
-                <img class='css-auto-dimension us-image' style='max-width:500px' src='${usImageUrl}'>
-                <div data-target='${image}${usImageUrl}' style='display:none;max-width:500px'></div>
-            </div>
+                <span class='css-image-size size-locale' data-css-url='${image}'></span>
+                <span style='color:red;font-size:20px;font-weight: bold;'>
+                    <a target="_blank" href='${image}'>${image}</a>
+                </span>
+                <span class='css-image-size size-us' data-css-url='${usImageUrl}'></span>
+                <span style='color:red;font-size:20px;font-weight: bold;'>
+                    <a target="_blank" href='${usImageUrl}'>${usImageUrl}</a>
+                </span>
+                <div style='css-image-comparison'>
+                    <button class='compareImages' data-tr-image="${image}" data-us-image="${usImageUrl})" style='border:1px solid black;border-radius:5px;'>Compare Images</button><br><br>
+                    <img class='css-auto-dimension' style='max-width:500px' src='${image}' >
+                    <img class='css-auto-dimension us-image' style='max-width:500px' src='${usImageUrl}'>
+                    <div data-target='${image}${usImageUrl}' style='display:none;max-width:500px'></div>
+                </div>
             </li>
         `;
     })
@@ -1390,22 +1403,22 @@ function generateCssCheckHtml(){
 
         localisedHtml+=`
             <li class="green cssCheck" style='max-width:100vw' data-css-find-attr='${image}${usImageUrl}'>
-            <span class='css-image-size' data-css-url='${image}'></span>
-            <span style='color:green;font-size:20px;font-weight: bold;'>
-                <a target="_blank" href='${image}'>${image}</a>
-            </span>
-            <span class='css-image-size' data-css-url='${usImageUrl}'></span>
-            <span style='color:green;font-size:20px;font-weight: bold;'>
-                <a target="_blank" href='${usImageUrl}'>${usImageUrl}</a>
-            </span>
-            <br>
-            <div style='css-image-comparison'>
-                <img class='css-auto-dimension' style='max-width:500px' style='float:left' src='${image}'>
-                <img class='css-auto-dimension us-image' style='max-width:500px' style='float:left' src='${usImageUrl}'>
+                <span class='css-image-size size-locale' data-css-url='${image}'></span>
+                <span style='color:green;font-size:20px;font-weight: bold;'>
+                    <a target="_blank" href='${image}'>${image}</a>
+                </span>
+                <span class='css-image-size size-us' data-css-url='${usImageUrl}'></span>
+                <span style='color:green;font-size:20px;font-weight: bold;'>
+                    <a target="_blank" href='${usImageUrl}'>${usImageUrl}</a>
+                </span>
                 <br>
-                <button class='compareImages' data-tr-image="${image}" data-us-image="${usImageUrl}" style='border: 1px solid black; padding: 5px; border-radius: 5px; margin-top: 10px;'>Compare Images</button><br><br>
-                <div data-target='${image}${usImageUrl}' style='display:none;max-width:500px'></div>
-            </div>
+                <div style='css-image-comparison'>
+                    <img class='css-auto-dimension' style='max-width:500px' style='float:left' src='${image}'>
+                    <img class='css-auto-dimension us-image' style='max-width:500px' style='float:left' src='${usImageUrl}'>
+                    <br>
+                    <button class='compareImages' data-tr-image="${image}" data-us-image="${usImageUrl}" style='border: 1px solid black; padding: 5px; border-radius: 5px; margin-top: 10px;'>Compare Images</button><br><br>
+                    <div data-target='${image}${usImageUrl}' style='display:none;max-width:500px'></div>
+                </div>
             </li>
         `;
     })
@@ -1426,14 +1439,14 @@ function generateCssCheckHtml(){
         <div class='approved qatest'>
             <p style='margin-left: 15px; padding-top: 15px;font-size:20px'>A total of <span style="font-weight:bold">${cssCheckImages.length}</span> images has been found in the localised css file.<br><span style="font-weight:bold;color:darkgreen">${localisedImages.length}</span> of images are localised while <span style="font-weight:bold;color:darkred">${notLocalised.length}</span> of images are not.</p><br>
             <span style='margin-left: 15px; padding-top: 15px;margin-right:15px'>Filter images by name</span>
-            <input id='filter-images-css-check' type='text' style='margin-right:20px'/>
+            <input id='filter-images-css-check' type='text' style='margin-right:20px'/><br>
+            <input type="checkbox" id="dimension-filter"> Show dimension diffrences only.
             <span class='css-check-filtered-count' style='color:darkgreen'></span><br>
             <p style='margin-left: 15px; padding-top: 15px;'>Checked css links:</p>
             <ul>
                 ${checkedLinks}
             </ul>
             <br>
-            <p style='margin-left: 15px; padding-top: 15px;'>Errors:</p>
             <ul class='css-error-list'>
             </ul>
             <ul>
@@ -1463,11 +1476,6 @@ function compareImages(e){
     }).ignoreAntialiasing().repaint().onComplete(function(data){
         loading=false;
         var diffImage = new Image();
-                    console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
-            console.log(data)
         if(data.error){
 
             alert("Cannot find US image");
@@ -1901,6 +1909,16 @@ const style=`
     padding:5px;
     background-color:white;
     border-radius:5px;
+}
+
+.qatest > ul > li.green.cssCheck.different-size{
+    border-bottom: 5px solid red;
+    border-top: 5px solid red;
+    background-color:#fbf0cd;
+}
+
+.qatest > ul > li.green.cssCheck.hidden{
+    display:none;
 }
 
 `;
