@@ -7,46 +7,12 @@
 </head>
 
 <body>
+    <button id="get">Get latest settings</button>
+
     <h2>Info</h2>
     <hr>
     <p>Works only on Apple pages.</p>
-    <p>An extension with bunch of tools. You can set the extension for your locale by right clicking the extension icon and selecting 'Options'.</p>
-
-    <h3><b>Setting variables</h3>
-    <ul>
-        <li>
-            <p><b>locale_short_variable</b>: This is what you have after www.apple.com/</p>
-            <p>Example: www.apple.com/tr/ -> tr</p>
-        </li>
-        <li>
-            <p><b>page_locale_variable</b>: Used for checking og:locale meta element.</p>
-            <p>Example: tr_TR</p>
-        </li>
-        <li>
-            <p><b>page_lang_variable</b>: Used for checking lang attributes.</p>
-            <p>Example: tr-TR</p>
-        </li>
-        <li>
-            <p><b>sitename_variable</b>: Used for checking site name meta element</p>
-            <p>Example: Apple (KR)</p>
-        </li>
-    </ul>
-
-
-
-
-
-
-
-
-
-
-
-
-    <p><b>support_link_variable</b>: Used for checking support links</p>
-    <p>Example: ko-kr</p>
-    <p>https://support.apple.com/ko-kr/ipad</p>
-
+    
     <p><b>popup duration</b>: Sets how long the passive popup stays on screen. 0 to turn off the popup.</p>
 
     <h3><b>Shortcuts</b></h3>
@@ -57,29 +23,13 @@
     </p>
     <hr>
 
-    <h2>GEO Settings</h2>
-    <Label>locale_short_variable</Label><br>
-    <input id="locale_short_variable" type="text"/><br>
-
-    <Label>page_locale_variable</Label><br>
-    <input id="page_locale_variable" type="text"/><br>
-
-    <Label>page_lang_variable</Label><br>
-    <input id="page_lang_variable" type="text"/><br>
-
-    <Label>sitename_variable</Label><br>
-    <input id="sitename_variable" type="text"/><br>
-
-    <Label>support_link_variable</Label><br>
-    <input id="support_link_variable" type="text"/><br>
-
-    <Label>popup duration</Label><br>
+    <h2>Settings</h2>
+    <Label>popup duration</Label><br>   
     <input id="popup_remove_variable" type="text"/><br>
+    <br>
+
     <button id="save">Save settings</button>
-    <div id="status2"></div>
-
-
-<br><br><br><br>
+    <br>
     <hr>
     <p>Add new link to whitelist:</p>
     <input id="newLink" type="text"/>
@@ -93,11 +43,134 @@
         </ul>
     </div>
 
+    <div class="loading-div-extension">
+        <div class="sk-folding-cube">
+            <div class="sk-cube1 sk-cube"></div>
+            <div class="sk-cube2 sk-cube"></div>
+            <div class="sk-cube4 sk-cube"></div>
+            <div class="sk-cube3 sk-cube"></div>
+        </div>
+        <div id="progress">
+            <span>
+                <span id="progress-count"></span>/
+                <span id="total"></span>
+            </span>
+        </div>
+    </div>
     <script src="settings.js"></script>
     <style>
         p{
             font-size:12px;
             font-weight: normal;
+        }
+
+        .sk-folding-cube {
+            margin: 20px auto;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            -webkit-transform: rotateZ(45deg);
+                    transform: rotateZ(45deg);
+        }
+        
+        .sk-folding-cube .sk-cube {
+            float: left;
+            width: 50%;
+            height: 50%;
+            position: relative;
+            -webkit-transform: scale(1.1);
+                -ms-transform: scale(1.1);
+                    transform: scale(1.1); 
+        }
+        .sk-folding-cube .sk-cube:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #333;
+            -webkit-animation: sk-foldCubeAngle 2.4s infinite linear both;
+                    animation: sk-foldCubeAngle 2.4s infinite linear both;
+            -webkit-transform-origin: 100% 100%;
+                -ms-transform-origin: 100% 100%;
+                    transform-origin: 100% 100%;
+        }
+        .sk-folding-cube .sk-cube2 {
+            -webkit-transform: scale(1.1) rotateZ(90deg);
+                    transform: scale(1.1) rotateZ(90deg);
+        }
+        .sk-folding-cube .sk-cube3 {
+            -webkit-transform: scale(1.1) rotateZ(180deg);
+                    transform: scale(1.1) rotateZ(180deg);
+        }
+        .sk-folding-cube .sk-cube4 {
+            -webkit-transform: scale(1.1) rotateZ(270deg);
+                    transform: scale(1.1) rotateZ(270deg);
+        }
+        .sk-folding-cube .sk-cube2:before {
+            -webkit-animation-delay: 0.3s;
+                    animation-delay: 0.3s;
+        }
+        .sk-folding-cube .sk-cube3:before {
+            -webkit-animation-delay: 0.6s;
+                    animation-delay: 0.6s; 
+        }
+        .sk-folding-cube .sk-cube4:before {
+            -webkit-animation-delay: 0.9s;
+                    animation-delay: 0.9s;
+        }
+        @-webkit-keyframes sk-foldCubeAngle {
+            0%, 10% {
+            -webkit-transform: perspective(140px) rotateX(-180deg);
+                    transform: perspective(140px) rotateX(-180deg);
+            opacity: 0; 
+            } 25%, 75% {
+            -webkit-transform: perspective(140px) rotateX(0deg);
+                    transform: perspective(140px) rotateX(0deg);
+            opacity: 1; 
+            } 90%, 100% {
+            -webkit-transform: perspective(140px) rotateY(180deg);
+                    transform: perspective(140px) rotateY(180deg);
+            opacity: 0; 
+            } 
+        }
+        
+        @keyframes sk-foldCubeAngle {
+            0%, 10% {
+            -webkit-transform: perspective(140px) rotateX(-180deg);
+                    transform: perspective(140px) rotateX(-180deg);
+            opacity: 0; 
+            } 25%, 75% {
+            -webkit-transform: perspective(140px) rotateX(0deg);
+                    transform: perspective(140px) rotateX(0deg);
+            opacity: 1; 
+            } 90%, 100% {
+            -webkit-transform: perspective(140px) rotateY(180deg);
+                    transform: perspective(140px) rotateY(180deg);
+            opacity: 0; 
+            }
+        }
+
+        .loading-div-extension{
+            position: fixed;
+            top: 0;
+            z-index: 999999999;
+            background-color: white;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            display:none;
+            flex-direction: column-reverse;
+        }
+
+        .loading-div-extension .sk-folding-cube{
+            transform:scale(5)
+        }
+        .loading-div-extension #progress{
+            flex-basis:100px;
         }
     </style>
 </body>

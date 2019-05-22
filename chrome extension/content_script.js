@@ -75,7 +75,6 @@ function generateHeadViewHtml(){
     bindWhitelistEvent();
 }
 
-
 function ariaLabelViewer(){
     showPage();
     
@@ -324,7 +323,6 @@ function bindWhitelistEvent()
             fillDimension(el);
         }
         catch{
-            // console.log(el);
         }
     });
     
@@ -1061,9 +1059,6 @@ function compare(a,b) {
     return 0;
   }
 
-
-
-
 function checkPageTitleOgTitle(){
     let title=document.querySelector("title").innerHTML;
     let ogTitle=document.querySelector("[property='og:title']").getAttribute("content");
@@ -1111,10 +1106,10 @@ function checkMetaDescEqualsOGDesc(){
 
     if(ogDesc===metaDesc)
     {
-        return {field:"Meta description equals to og:description",expected:"Content to be the same",result:true,value:"<br>og:description:'"+ogDesc+"'<br><br>meta description:'"+metaDesc+"'"};
+        return {field:"Meta description equals to og:description",expected:"Content to be the same",result:true,value:"<br>og:description:<br>'"+ogDesc+"'<br><br>meta description:<br>'"+metaDesc+"'"};
     }
     else{
-        return {field:"Meta description equals to og:description",expected:"Content to be the same",result:false,value:"<br>og:description:'"+ogDesc+"'<br><br>meta description:'"+metaDesc};
+        return {field:"Meta description equals to og:description",expected:"Content to be the same",result:false,value:"<br>og:description:<br>'"+ogDesc+"'<br><br>meta description:<br>'"+metaDesc+"'"};
     }
 }
 
@@ -1329,7 +1324,7 @@ function generateCssCheckHtml(){
     let possible="";
 
     Object.keys(window.document.styleSheets).forEach(key=>{
-        if(window.document.styleSheets[key].href.indexOf(locale_variable)!==-1)
+        if(window.document.styleSheets[key].href!==null&&window.document.styleSheets[key].href.indexOf(locale_variable)!==-1)
         {
             Object.keys(window.document.styleSheets[key].cssRules).forEach(ruleKey=>{
                 let rule=window.document.styleSheets[key].cssRules[ruleKey];
@@ -1425,7 +1420,7 @@ function generateCssCheckHtml(){
 
     let checkedLinks="";
     Object.keys(window.document.styleSheets).forEach(key=>{
-        if(window.document.styleSheets[key].href.indexOf(locale_variable)!==-1)
+        if(window.document.styleSheets[key].href!==null&&window.document.styleSheets[key].href.indexOf(locale_variable)!==-1)
         {
             checkedLinks+="<p>"+window.document.styleSheets[key].href+"</p>";
         }
@@ -1529,7 +1524,7 @@ function findUSVersions(){
         imageNameList.push(imageName);
     });
     Object.keys(window.document.styleSheets).forEach(key=>{
-        if(window.document.styleSheets[key].href.indexOf(locale_variable)===-1)
+        if(window.document.styleSheets[key].href!==null&&window.document.styleSheets[key].href.indexOf(locale_variable)===-1)
         {
             Object.keys(window.document.styleSheets[key].cssRules).forEach(ruleKey=>{
                 let rule=window.document.styleSheets[key].cssRules[ruleKey];
@@ -1571,15 +1566,19 @@ function findCssUsImages(rule){
 
 //general html&css
 const style=`
+li{
+    box-sizing:border-box;
+}
 .result-container{
     z-index:9999;
     position:relative;
+    direction: ltr;
 }
 .result-container .qatest li{
+    box-sizing:border-box;
     padding-left:10px;
 }
 .result-container .suspicious li {
-    height: 45px;
     background: #F7F5F2
 }
 
@@ -1635,15 +1634,11 @@ const style=`
 }
 
 .result-container .approved li a {
-    line-height: auto;
-    display: block;
-    width: 100%;
-    height: auto;
-    margin: 0 0 7px 0px;
     font-size: 18px;
     color: #333;
     text-decoration: none;
-    padding-left: 10px;
+    padding: 0;
+    margin:0;
 }
 
 .result-container .approved li.cssCheck{
@@ -1673,14 +1668,22 @@ const style=`
 }
 
 .result-container .close-results{
-    position:absolute;
-    top:10px;
-    right:10px;
-    font-size:32px;
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 25px;
+    background-color: darkgray;
+    border-radius: 38px;
+    height: 36px;
+    width: 36px;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: center;
 }
 
 .result-container .close-results:hover{
-    color:darkred;
+    background-color: gray;
     cursor:pointer;
 }
 
@@ -1860,6 +1863,10 @@ const style=`
 }
 
 .result-container-popup{
+    font-family: "SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight:initial;
+    font-size:initial;
+
     position: fixed;
     z-index: 9999999999;
     width: 220px;
@@ -1870,9 +1877,12 @@ const style=`
     border-radius: 12px;
     margin-right: 10px;
     border: 2px solid darkred;
+    direction: ltr;
 }
 
 .result-container-popup ul{
+        margin:initial;
+    padding:initial;
     list-style:none;
     margin-left:0;
 }
@@ -2801,54 +2811,38 @@ URL: https://github.com/Huddle/Resemble.js
 	resemble.outputSettings = setGlobalOutputSettings;
 
 
+    function getSettingsByLocale(settings,locale){
+        return settings.find(function(element) {
+            return element.locale_short_variable===locale;
+        });
+    }
 
-    window.onload=()=>{
-
-           chrome.storage.sync.get({
-            settings:{}
-            }, function(result) {
-                locale_variable=result.settings.locale_variable;
-                locale_short_variable=result.settings.locale_short_variable;
-                page_locale_variable=result.settings.page_locale_variable;
-                page_lang_variable=result.settings.page_lang_variable;
-                sitename_variable=result.settings.sitename_variable;
-                popup_remove_variable=result.settings.popup_remove_variable;
-                support_link_variable=result.settings.support_link_variable;
-                
-                if(!locale_variable)
-                {
-                    locale_variable="/tr/";
+    window.onload = function() {
+        if(document.title.length>0) {
+            chrome.storage.sync.get(null, function(result) {
+                if(!result || !result.settings_part1){
+                    alert("To make extension to work, please right click the extension and press options once. It will load all settings automatically.")
                 }
 
-                if(!locale_short_variable)
-                {
-                    locale_short_variable="tr";
-                }
-                if(!page_locale_variable)
-                {
-                    page_locale_variable="tr_TR";
-                }
-                if(!page_lang_variable)
-                {
-                    page_lang_variable="tr-TR";
-                }
-                if(!sitename_variable)
-                {
-                    sitename_variable="Apple (Türkiye)";
-                }
+                let allSettings=result.settings_part1.concat(result.settings_part2).concat(result.settings_part3).concat(result.settings_part4).concat(result.settings_part5);
+                let currentLocale=window.location.pathname.split("/")[1];
+                let settings=getSettingsByLocale(allSettings,currentLocale);
+                locale_variable=settings.locale_variable;
+                locale_short_variable=settings.locale_short_variable;
+                page_locale_variable=settings.page_locale_variable;
+                page_lang_variable=settings.page_lang_variable;
+                sitename_variable=settings.sitename_variable;
+                popup_remove_variable=result.popup_duration;
+                support_link_variable=settings.support_link_variable;
                 if(!popup_remove_variable)
                 {
                     popup_remove_variable=1500;
                 }
-                if(!support_link_variable)
-                {
-                    support_link_variable="tr-tr";
-                }
-
 
                 qaCheckPromises(true);
-        });
-    };
+            });
+        }
+    }
 
 
     window.onclick=(e)=>{

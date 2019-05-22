@@ -2,10 +2,6 @@
 
 This extension is a collection of helper tools for developers.
 
-**You have to set your extension variables depending on your GEO by right clicking the extension icon and choosing options.**
-
-
-
 ## Features
 
 * ### Link checker
