@@ -36,8 +36,164 @@ chrome.runtime.onMessage.addListener(
         if( request.type === "pageHeadViewer" ) {
             generateHeadViewHtml();
         }
+
+        if( request.type === "footnoteComparer" ) {
+            footnoteComparer();
+        }
     }
 );
+
+function footnoteComparer(){
+    // document.querySelectorAll("sup").forEach(sup=>console.log(sup.parentElement.innerText))
+    //Tr sups
+    const trSups=[];
+    document.querySelectorAll("sup").forEach(sup=>trSups.push({
+        supIndex:sup.innerText,
+        text:sup.parentElement.innerHTML
+    }));
+
+    const trUnordered=[]
+    //TR unordered footnotes
+    document.querySelectorAll(".ac-gf-sosumi ul li").forEach(footnote=>trUnordered.push({
+        supIndex:"unordered",
+        text:footnote.innerHTML
+    }));
+
+    //TR ordered footnotes
+    const trOrdered=[]
+    document.querySelectorAll(".ac-gf-sosumi ol li").forEach((footnote,i)=>trOrdered.push({
+        supIndex:i+1,
+        text:footnote.innerHTML
+    }));
+
+    let usURL=window.location.href.replace(locale_variable,"/");
+    if(usURL.indexOf("http")===-1){
+        usURL="http://"+usURL;
+    }
+    fetch(usURL).then(function (response) {
+        return response.text();
+      })
+      .then(function (pageHtml) {
+          var usHTML = document.createElement('div');
+          usHTML.innerHTML = pageHtml.trim();
+
+        //US sups
+        const usSups=[];
+        usHTML.querySelectorAll("sup").forEach(sup=>usSups.push({
+            supIndex:sup.innerText,
+            text:sup.parentElement.innerHTML
+        }));
+
+        const usUnordered=[]
+        //US unordered footnotes
+        usHTML.querySelectorAll(".ac-gf-sosumi ul li").forEach(footnote=>usUnordered.push({
+            supIndex:"unordered",
+            text:footnote.innerHTML
+        }));
+
+        //US ordered footnotes
+        const usOrdered=[]
+        usHTML.querySelectorAll(".ac-gf-sosumi ol li").forEach((footnote,i)=>usOrdered.push({
+            supIndex:i+1,
+            text:footnote.innerHTML
+        }));
+        fillFootnoteCompareHtml({trSups,trUnordered,trOrdered},{usSups,usUnordered,usOrdered});
+
+      })
+      .catch(function(){
+          
+      });
+}
+
+function fillFootnoteCompareHtml(tr,us){
+    let trSupHtml="";
+    tr.trSups.map(sup=>{
+        let footnote="";
+        if(!tr.trOrdered[sup.supIndex-1]){
+            footnote="Footnote not found";
+        }
+        else{
+            footnote=tr.trOrdered[sup.supIndex-1].supIndex+". "+tr.trOrdered[sup.supIndex-1].text;
+        }
+
+        trSupHtml+=`
+        <li>
+            <h4>Reference: ${sup.supIndex}</h4>
+            <p>${sup.text}</p>
+            <h4>Footnote:</h4>
+            <p>${footnote}</p>
+        </li>`
+    });
+
+    let trUnorderedHtml="";
+    console.log(tr.trUnordered);
+    tr.trUnordered.map(sup=>{
+        trUnorderedHtml+=`
+        <li>
+            <h4>Unordered reference</h4>
+            <p>${sup.text}</p>
+        </li>`
+    });
+
+
+    let usSupHtml="";
+    us.usSups.map(sup=>{
+        let footnote="";
+        if(!us.usOrdered[sup.supIndex-1]){
+            footnote="Footnote not found";
+        }
+        else{
+            footnote=us.usOrdered[sup.supIndex-1].supIndex+". "+us.usOrdered[sup.supIndex-1].text;
+        }
+
+        usSupHtml+=`
+        <li>
+            <h4>Reference: ${sup.supIndex}</h4>
+            <p>${sup.text}</p>
+            <h4>Footnote:</h4>
+            <p>${footnote}</p>
+        </li>`
+    });
+
+    let usUnorderedHtml="";
+    us.usUnordered.map(sup=>{
+        usUnorderedHtml+=`
+        <li>
+            <h4>Unordered reference</h4>
+            <p>${sup.text}</p>
+        </li>`
+    });
+
+    let html=`
+    <div class='result-container footnotes'>
+        <div class='close-results'>X</div>
+        <div class='approved qatest tr-footnotes' style="padding:20px;">
+            <h1>${page_locale_variable} Sups:</h1>
+            <ul>
+                ${trSupHtml}
+            </ul>
+            <h1>Unordered:</h2>
+            <ul>
+                ${trUnorderedHtml}
+            </ul>
+        </div>
+        <div class='approved qatest us-footnotes' style="padding:20px;">
+            <h1>US Sups:</h1>
+            <ul>
+                ${usSupHtml}
+            </ul>
+            <h1>Unordered:</h2>
+            <ul>
+                ${usUnorderedHtml}
+            </ul>
+        </div>
+    <style class='result-style'>${style}</style>
+    </div>
+    `;
+    hidePage();
+    document.querySelector("body").parentNode.insertBefore(createElementFromHTML(html), document.querySelector("body"));
+    bindWhitelistEvent();
+}
 
 function generateHeadViewHtml(){
     const branch=window.location.host.replace(".apple.com","");
@@ -1566,6 +1722,24 @@ function findCssUsImages(rule){
 
 //general html&css
 const style=`
+.result-container.footnotes{
+    display:flex;
+}
+.result-container.footnotes li{
+    min-height:535px
+}
+.result-container .approved.qatest.tr-footnotes li sup a,.result-container .approved.qatest.us-footnotes li sup a{
+    display:inline;
+        font-size: 12px;
+        color:red;
+}
+
+.result-container .approved.qatest.tr-footnotes,.result-container .approved.qatest.us-footnotes{
+    max-height: 100vh;
+    overflow: scroll;
+}
+
+
 li{
     box-sizing:border-box;
 }

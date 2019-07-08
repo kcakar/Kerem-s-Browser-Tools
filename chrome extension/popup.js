@@ -63,6 +63,14 @@ function pageHeadViewer() {
    });
 }
 
+function footnoteComparer() {
+    chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+        var activeTab = tabs[0];
+        chrome.tabs.sendMessage(activeTab.id, {"type": "footnoteComparer"});
+        window.close();
+   });
+}
+
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("qaCheck").addEventListener("click", doQATest);
   document.getElementById("checkLinks").addEventListener("click", checkLinks);
@@ -72,4 +80,5 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("autoLink").addEventListener("click", autoLink);
   document.getElementById("cssImageCheck").addEventListener("click", cssImageCheck);
   document.getElementById("pageHeadViewer").addEventListener("click", pageHeadViewer);
+  document.getElementById("footnoteComparer").addEventListener("click", footnoteComparer);
 });
