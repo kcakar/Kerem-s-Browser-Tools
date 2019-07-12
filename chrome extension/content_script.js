@@ -40,8 +40,132 @@ chrome.runtime.onMessage.addListener(
         if( request.type === "footnoteComparer" ) {
             footnoteComparer();
         }
+        if( request.type === "countryComparer" ) {
+            countryComparer();
+        }
+        
     }
 );
+
+function countryComparer(){
+
+    let usURL=window.location.href.replace(locale_variable,"/");
+    if(usURL.indexOf("http")===-1){
+        usURL="http://"+usURL;
+    }
+    fetch(usURL).then(function (response) {return response.text();})
+    .then(function (pageHtml) {
+        var usHTML = document.createElement('div');
+        usHTML.innerHTML = pageHtml.trim();
+        const trSections=[];
+
+        document.querySelectorAll("section").forEach((section,i)=>
+        {
+            const header=section.querySelectorAll("h2,h4")[0];
+
+            if(header&&section.id){
+                console.log(section.id)
+                const usSection=usHTML.querySelectorAll("#"+section.id)[0];
+                let usHeader={innerText:"This section is not found on the US page.ID might have been updated."};
+                let usCountries=[];
+                if(usSection)
+                {
+                    usHeader=usSection.querySelectorAll("h2,h4")[0];
+                    usSection.querySelectorAll("li").forEach(c=>usCountries.push(c.innerText));
+                }
+
+
+                const trCountries=[]
+                section.querySelectorAll("li").forEach(c=>trCountries.push(c.innerText));
+
+                trSections.push({
+                    showId:section.id+i.toString(),
+                    id:section.id,
+                    header:header.innerText,
+                    countries:trCountries,
+                    usHeader:usHeader.innerText,
+                    usCountries:usCountries
+                })
+            }
+        });
+        fillCountryCompareHtml(trSections);
+    })
+    .catch(function(err){
+        console.log(err)
+    });
+}
+
+
+
+
+function fillCountryCompareHtml(trSections){
+
+    let featuresHTML="";
+    trSections.map(section=>{
+        if(section.countries.length!=section.usCountries.length){
+
+            let trCountriesHTML="";
+            section.countries.map(c=>trCountriesHTML+=`<li style="margin:0;padding:0;">${c}</li>`)
+
+            let usCountriesHTML="";
+            section.usCountries.map(c=>usCountriesHTML+=`<li style="margin:0;padding:0">${c}</li>`)
+            
+            featuresHTML+=`
+            <li class="feature-compare-row" style="border-bottom:2px solid darkred">
+                <button class="feature-show-hide" data-show-hide="${section.showId}" style="border:1px solid gray">Show/Hide Countries</button>
+                <div style="width:100%;display:flex;">
+                    <div style="margin-right:100px;">
+                        <h2 style="max-width:200px;">${section.header}</h2>
+                        <h4>${page_locale_variable} countries: ${section.countries.length}</h4>
+                        <ul style="display:none" id="${section.showId}_tr">${trCountriesHTML}</ul>
+                    </div>
+                    <div style="align-self: flex-end;">
+                        <h2 style="max-width:200px;">${section.usHeader}</h2>
+                        <h4>US countries: ${section.usCountries.length}</h4>
+                        <ul style="display:none" id="${section.showId}_us">${usCountriesHTML}</ul>
+                    </div>
+                </div>
+            </li>
+            `;
+        }
+    })    
+
+    let html=`
+    <div class='result-container'>
+        <div class='close-results'>X</div>
+        <div class='' style="padding:20px;">
+            <ul>
+                ${featuresHTML}
+            </ul>
+        </div>
+    <style class='result-style'>${style}</style>
+    </div>
+    `;
+    hidePage();
+    document.querySelector("body").parentNode.insertBefore(createElementFromHTML(html), document.querySelector("body"));
+    bindWhitelistEvent();
+}
+
+function showFeatureCountries(x){
+    const id=x.target.getAttribute("data-show-hide");
+    let current=document.getElementById(id+"_tr");
+    if(current.style.display==="block"){
+        current.style.display = "none";
+    }
+    else{
+        current.style.display = "block";
+    }
+
+    current=document.getElementById(id+"_us");
+    if(current.style.display==="block"){
+        current.style.display = "none";
+    }
+    else{
+        current.style.display = "block";
+    }
+}
+
+
 
 function footnoteComparer(){
     // document.querySelectorAll("sup").forEach(sup=>console.log(sup.parentElement.innerText))
@@ -505,6 +629,11 @@ function bindWhitelistEvent()
     let linkCheckBtn=document.getElementsByClassName("linkCheck");
     [].forEach.call(linkCheckBtn, function (el) {
       el.addEventListener("click",x=>checkLinks(false));
+    });
+
+    let showHideBtn=document.getElementsByClassName("feature-show-hide");
+    [].forEach.call(showHideBtn, function (el) {
+      el.addEventListener("click",x=>showFeatureCountries(x));
     });
     
 }
