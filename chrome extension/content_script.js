@@ -43,9 +43,19 @@ chrome.runtime.onMessage.addListener(
         if( request.type === "countryComparer" ) {
             countryComparer();
         }
+
+        if( request.type === "itunesDownloadShow" ) {
+            itunesDownloadShow();
+        }
         
     }
 );
+
+
+function itunesDownloadShow(){
+    document.querySelectorAll(".section").forEach(s=>{s.style.display="block";s.style.opacity="1"});
+    alert("All platform specific sections are now visible.");
+}
 
 function countryComparer(){
 
