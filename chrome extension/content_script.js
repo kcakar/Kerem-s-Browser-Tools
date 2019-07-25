@@ -47,10 +47,100 @@ chrome.runtime.onMessage.addListener(
         if( request.type === "itunesDownloadShow" ) {
             itunesDownloadShow();
         }
+
+        if( request.type === "imageInspectMouseOver" ) {
+            imageInspectMouseOver();
+        }
         
     }
 );
 
+function imageInspectMouseOver(){
+    let imageSizeViewers=document.querySelectorAll(".image-size-viewer");
+    if(imageSizeViewers.length>0){
+        imageSizeViewers.forEach(e=>e.remove());
+    }
+    else{
+        let images=document.querySelectorAll("figure,img");
+        images.forEach(image =>{
+            getCssInfoByElement(image);
+            if(image.children){
+                for(let child of image.children)
+                {
+                    getCssInfoByElement(child);
+                }
+            }
+        });
+    }
+}
+
+function getCssInfoByElement(el) {
+    var sheets = document.styleSheets, ret = [];
+    el.matches = el.matches || el.webkitMatchesSelector || el.mozMatchesSelector 
+        || el.msMatchesSelector || el.oMatchesSelector;
+
+    if(el.matches){
+        const imageInfo={
+            backgroundImage:"",
+            width:"",
+            height:"",
+            name:"",
+            backgroundSize:""
+        }
+
+        for (var i in sheets) {
+            var rules = sheets[i].rules || sheets[i].cssRules;
+            for (var r in rules) {
+                if (el.matches(rules[r].selectorText)) {
+                    if(rules[r].cssText.indexOf("background")!==-1){
+
+                        if(rules[r].style.backgroundImage && rules[r].style.backgroundImage!=="none" && rules[r].style.backgroundImage!== "initial")
+                        {
+                            imageInfo.backgroundImage = rules[r].style.backgroundImage;
+                            imageInfo.name = rules[r].style.backgroundImage.split("/").slice(-1)[0];
+                            imageInfo.name=imageInfo.name.replace('")','');
+                        }
+
+                        if(rules[r].style.width && rules[r].style.width!=='initial'){
+                            imageInfo.width = rules[r].style.width;
+                        }
+
+                        if(rules[r].style.height && rules[r].style.height!=='initial'){
+                            imageInfo.height = rules[r].style.height;
+                        }
+
+                        if(rules[r].style.backgroundSize && rules[r].style.backgroundSize!=='initial'){
+                            imageInfo.backgroundSize = rules[r].style.backgroundSize;
+                        }
+                    }
+                }
+            }
+        }
+        if(imageInfo.name || imageInfo.backgroundImage || imageInfo.width || imageInfo.height || imageInfo.backgroundSize){
+            addImageSizeDisplay(el,imageInfo);
+        }
+    }
+    
+    return ret;
+}
+
+function addImageSizeDisplay(imageElement,imageInfo){
+    const label=imageElement.getAttribute("aria-label");
+    if(imageElement.style.position!=='absolute')
+    {
+        imageElement.style.position='relative';
+    }
+    let html=`
+    <div class='image-size-viewer aria-label-viewer popup-color-3' style='text-align:left;left:${imageElement.offsetWidth/2}px;top:${imageElement.offsetHeight/2}px'>
+        <span>Width:${imageInfo.width}</span><br>
+        <span>Height:${imageInfo.height}</span><br>
+        <span>Background-size:${imageInfo.backgroundSize}</span><br>
+        <span>Name:${imageInfo.name}</span><br>
+        <span>URL:<a href='${imageInfo.backgroundImage.replace('url("','').replace('")','')}'>Click!</a></span>
+        <style class='result-style'>${style}</style>
+    </div>`
+    imageElement.appendChild(createElementFromHTML(html));
+}
 
 function itunesDownloadShow(){
     document.querySelectorAll(".section").forEach(s=>{s.style.display="block";s.style.opacity="1"});
@@ -81,12 +171,20 @@ function countryComparer(){
                 if(usSection)
                 {
                     usHeader=usSection.querySelectorAll("h2,h4")[0];
-                    usSection.querySelectorAll("li").forEach(c=>usCountries.push(c.innerText));
+                    usSection.querySelectorAll("li").forEach(c=>{
+                        if(c.innerText.trim().length>0){
+                            usCountries.push(c.innerText)
+                        }
+                    });
                 }
 
 
                 const trCountries=[]
-                section.querySelectorAll("li").forEach(c=>trCountries.push(c.innerText));
+                section.querySelectorAll("li").forEach(c=>{
+                    if(c.innerText.trim().length>0){
+                        trCountries.push(c.innerText)
+                    }
+                });
 
                 trSections.push({
                     showId:section.id+i.toString(),
@@ -104,9 +202,6 @@ function countryComparer(){
         console.log(err)
     });
 }
-
-
-
 
 function fillCountryCompareHtml(trSections){
 
@@ -145,7 +240,7 @@ function fillCountryCompareHtml(trSections){
         <div class='close-results'>X</div>
         <div class='' style="padding:20px;">
             <ul>
-                ${featuresHTML}
+                ${featuresHTML==""?"No diffrences found":featuresHTML}
             </ul>
         </div>
     <style class='result-style'>${style}</style>
@@ -174,8 +269,6 @@ function showFeatureCountries(x){
         current.style.display = "block";
     }
 }
-
-
 
 function footnoteComparer(){
     // document.querySelectorAll("sup").forEach(sup=>console.log(sup.parentElement.innerText))
@@ -1861,6 +1954,10 @@ function findCssUsImages(rule){
 
 //general html&css
 const style=`
+.image-size-viewer.aria-label-viewer{
+    min-width:300px;
+    max-width: initial!important;
+}
 .result-container.footnotes{
     display:flex;
 }
