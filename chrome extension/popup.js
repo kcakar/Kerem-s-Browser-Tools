@@ -95,6 +95,16 @@ function imageInspectMouseOver() {
    });
 }
 
+function pullFromServer() {
+    chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+        var activeTab = tabs[0];
+        chrome.tabs.sendMessage(activeTab.id, {"type": "pullFromServer"});
+        window.close();
+   });
+}
+
+
+
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("qaCheck").addEventListener("click", doQATest);
   document.getElementById("checkLinks").addEventListener("click", checkLinks);
@@ -108,4 +118,11 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("countryComparer").addEventListener("click", countryComparer);
   document.getElementById("itunesDownloadShow").addEventListener("click", itunesDownloadShow);
   document.getElementById("imageInspectMouseOver").addEventListener("click", imageInspectMouseOver);
+  document.getElementById("pullFromServer").addEventListener("click", pullFromServer);
 });
+
+chrome.storage.sync.get(null,r=>{
+    document.getElementById("pullFromServer").setAttribute("checked",r.isLoadFromServer)
+    
+    });
+

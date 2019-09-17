@@ -5,7 +5,7 @@ let page_lang_variable="tr-TR";
 let sitename_variable="Apple (Türkiye)";
 let popup_remove_variable=1500;
 let support_link_variable="tr-tr";
-
+let isLoadFromServer=false;
 
 
 chrome.runtime.onMessage.addListener(
@@ -52,8 +52,47 @@ chrome.runtime.onMessage.addListener(
             imageInspectMouseOver();
         }
         
+        if( request.type === "pullFromServer" ) {
+
+            let newValue=true;
+            if(isLoadFromServer){
+                newValue=false;
+            }
+
+            chrome.storage.sync.set({ isLoadFromServer: newValue,}, function() {
+                isLoadFromServer=newValue;
+                pullFromServer();
+            });
+        }
     }
 );
+
+function pullFromServer(){
+    let vAssets= document.querySelectorAll("link[href*='/v/'],script[src*='/v/']");
+    console.log(isLoadFromServer)
+    vAssets.forEach(e=>{
+        if(isLoadFromServer==true){
+            if(e.href){
+                e.setAttribute("oldHref",e.href);
+                e.href=e.href.replace("-local","");
+            }
+            if(e.src){
+                e.setAttribute("oldSrc",e.src);
+                e.src=e.src.replace("-local","")
+            }  
+        }
+        else{
+            if(e.href){
+                e.href=e.getAttribute("oldHref");
+            }
+            if(e.src){
+                e.src=e.getAttribute("oldSrc");
+            }  
+        }
+
+  
+    });
+}
 
 function imageInspectMouseOver(){
     let imageSizeViewers=document.querySelectorAll(".image-size-viewer");
@@ -3244,6 +3283,17 @@ URL: https://github.com/Huddle/Resemble.js
                 sitename_variable=settings.sitename_variable;
                 popup_remove_variable=result.popup_duration;
                 support_link_variable=settings.support_link_variable;
+                isLoadFromServer=result.isLoadFromServer;
+
+                if(isLoadFromServer== null){
+                     chrome.storage.sync.set({ isLoadFromServer: false}, function() {
+                        isLoadFromServer=false;
+                    });
+                }
+                if(isLoadFromServer){
+                    pullFromServer();
+                }
+                
                 if(!popup_remove_variable)
                 {
                     popup_remove_variable=1500;

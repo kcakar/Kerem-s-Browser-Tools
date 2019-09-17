@@ -2,20 +2,123 @@
 <html>
   <head>
     <style>
-      body{
-        width: 210px;
-      }
-      button {
-          height: 40px;
-          width: 210px;
-          outline: none;
-          margin-top: 5px;
-          font-size: 14px;
-          font-family: Verdana, Geneva, Tahoma, sans-serif;
-      }
+body{
+  width: 210px;
+}
+button {
+    height: 40px;
+    width: 210px;
+    outline: none;
+    margin-top: 5px;
+    font-size: 14px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+body {
+    background: white none repeat scroll 0 0;
+    color: #404040;
+    font: 13px/20px "Helvetica Neue",Helvetica,Arial,sans-serif;
+    margin: 10px auto;
+    text-align: center;
+    width: 280px;
+}
+
+.switch {
+    background-color: #ddd;
+    border-radius: 18px;
+    cursor: pointer;
+    display: inline-block;
+    height: 20px;
+    padding: 3px;
+    position: relative;
+    vertical-align: top;
+    width: 56px;
+}
+.switch-input {
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+}
+.switch-label {
+    background: #eceeef none repeat scroll 0 0;
+    border-radius: inherit;
+    display: block;
+    font-size: 10px;
+    height: inherit;
+    position: relative;
+    text-transform: uppercase;
+    transition: all 0.15s ease-out 0s;
+}
+.switch-label::before, .switch-label::after {
+    line-height: 1;
+    margin-top: -0.5em;
+    position: absolute;
+    top: 50%;
+    transition: inherit;
+}
+/*
+.switch-label::before {
+    color: #aaa;
+    content: attr(data-off);
+    right: 11px;
+}
+.switch-label::after {
+    color: white;
+    content: attr(data-on);
+    left: 11px;
+    opacity: 0;   
+}
+*/
+.switch-input[checked=true] ~ .switch-label {
+    background: #47a8d8 none repeat scroll 0 0;
+}
+/*
+.switch-input[checked=true] ~ .switch-label::before {
+    opacity: 0;
+}
+.switch-input[checked=true] ~ .switch-label::after {
+    opacity: 1;
+}
+*/
+.switch-handle {
+    background-color: #fff;
+    border-radius: 10px;
+    height: 18px;
+    left: 4px;
+    position: absolute;
+    top: 4px;
+    transition: left 0.15s ease-out 0s;
+    width: 18px;
+}
+.switch-handle::before {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    content: "";
+    height: 12px;
+    left: 50%;
+    margin: -6px 0 0 -6px;
+    position: absolute;
+    top: 50%;
+    width: 12px;
+}
+.switch-input[checked=true] ~ .switch-handle {
+    left: 40px;
+}
+.switch-green > .switch-input[checked=true] ~ .switch-label {
+    background-color: #4fb845;
+}
+
     </style>
   </head>
   <body style="background-color:rgb(255, 255, 255);">
+    <div style="width:100%;height:40px;display: flex;align-content: center;align-items: center;vertical-align: center;justify-content: center">
+    <label  class="switch switch-green">
+      <input id="pullFromServer" type="checkbox" class="switch-input">
+      <span class="switch-label" data-on="On" data-off="Off"></span>
+      <span class="switch-handle"></span>
+    </label>
+    <p style="font-size:14px;padding-left:10px">Pull /v/ from server</p>
+    </div>
     <button id="checkLinks" style="background-color:rgb(240, 233, 178)">Link checker</button>
     <button id="qaCheck" style="background-color:rgba(188, 224, 153, 0.712)">QA tests</button>
     <button id="cssImageCheck" style="background-color:rgb(241, 226, 238)">CSS Images Checker</button>
