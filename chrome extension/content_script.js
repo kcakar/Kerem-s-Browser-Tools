@@ -3324,4 +3324,14 @@ URL: https://github.com/Huddle/Resemble.js
             bi = style.backgroundImage.slice(4, -1).replace(/"/g, "");
             chrome.runtime.sendMessage({type:'open_us_page',url:bi});
         } 
+
+
+
     };
+
+    window.onkeydown=(e)=>{
+        if(e.keyCode === 27)
+        {
+            close();
+        }
+    }
