@@ -2022,6 +2022,8 @@ li{
     z-index:9999;
     position:relative;
     direction: ltr;
+    max-height: 100vh;
+    overflow: scroll;
 }
 .result-container .qatest li{
     box-sizing:border-box;
