@@ -103,7 +103,13 @@ function pullFromServer() {
    });
 }
 
-
+function cssGrabber() {
+    chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
+        var activeTab = tabs[0];
+        chrome.tabs.sendMessage(activeTab.id, {"type": "cssGrabber"});
+        window.close();
+   });
+}
 
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("qaCheck").addEventListener("click", doQATest);
@@ -119,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("itunesDownloadShow").addEventListener("click", itunesDownloadShow);
   document.getElementById("imageInspectMouseOver").addEventListener("click", imageInspectMouseOver);
   document.getElementById("pullFromServer").addEventListener("click", pullFromServer);
+  document.getElementById("cssGrabber").addEventListener("click", cssGrabber);
 });
 
 chrome.storage.sync.get(null,r=>{

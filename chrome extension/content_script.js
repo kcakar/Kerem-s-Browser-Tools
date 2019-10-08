@@ -51,6 +51,10 @@ chrome.runtime.onMessage.addListener(
         if( request.type === "imageInspectMouseOver" ) {
             imageInspectMouseOver();
         }
+
+        if( request.type === "cssGrabber" ) {
+            cssGrabber();
+        }
         
         if( request.type === "pullFromServer" ) {
 
@@ -66,6 +70,121 @@ chrome.runtime.onMessage.addListener(
         }
     }
 );
+
+function cssGrabber(){
+        let html=`
+        <div class='result-container'>
+            <div class='close-results'>X</div>
+            <div class='approved qatest'>
+                <p style='margin-left: 15px; padding-top: 15px;'><input type='checkbox' class='chkStripOut' type='text' style='margin-left: 15px;'>Do not strip out rules</p>
+                <p style='margin-left: 15px; padding-top: 15px;'>Enter the list of images to pull css rules</p>
+                <textarea class='txt-grab-css' style='width:100%;max-width: 500px; min-height: 500px;  margin: 15px;' ></textarea><br>
+                <button class='btn-grab-css' style='margin-left: 15px; border: 1px solid; padding: 10px; border-radius: 15px;;'>Grab all css rules</button>
+                <button class='btn-copy-css' style='margin-left: 15px; border: 1px solid; padding: 10px; border-radius: 15px;;'>Copy to clipboard</button>
+                <div class='css-grab-result' style='padding: 15px 15px; margin: 15px 0; border-top: 2px black dashed;'>
+                    <pre></pre>
+                </div>
+            </div>
+            <style class='result-style'>${style}</style>
+        `;
+        hidePage();
+        document.querySelector("body").parentNode.insertBefore(createElementFromHTML(html), document.querySelector("body"));
+        bindWhitelistEvent();
+}
+
+
+function grabRulesClick(){
+    let rules=[];
+    let txtValue=document.querySelector(".txt-grab-css").value.split("\n");
+    let imageNameList=[];
+    txtValue.forEach(name=>{
+        name=name.replace("_large_2x","");
+        name=name.replace("_large","");
+        name=name.replace("_medium_2x","");
+        name=name.replace("_medium","");
+        name=name.replace("_small_2x","");
+        name=name.replace("_small","");
+        name=name.replace(".jpg","");
+        name=name.replace(".png","");
+        imageNameList.push(name);
+    })
+    imageNameList=[...new Set(imageNameList)];
+    console.log(imageNameList);
+    let isStripOut=!document.querySelector(".chkStripOut").checked;
+    if(imageNameList)
+    {
+       rules=grabUsCss(imageNameList,isStripOut);
+    }
+    document.querySelector(".css-grab-result pre").innerHTML=rules.join("\n\n");
+
+}
+
+function grabUsCss(imageNameList,isStripOut){
+    let rules=[];
+    Object.keys(window.document.styleSheets).forEach(key=>{
+        if(window.document.styleSheets[key].href!==null&&window.document.styleSheets[key].href.indexOf(locale_variable)===-1)
+        {
+            Object.keys(window.document.styleSheets[key].cssRules).forEach(ruleKey=>{
+                let rule=window.document.styleSheets[key].cssRules[ruleKey];
+                rules=findUsRules(imageNameList,rule,rules,isStripOut);
+            });
+        }
+    });
+    return rules;
+}
+
+function findUsRules(imageNameList,rule,rules,isStripOut){
+    if(rule.style && rule.style.backgroundImage && rule.style.backgroundImage.indexOf("url")!==-1){
+        if(listHasImage(imageNameList,rule.style.backgroundImage)){
+            if(isStripOut){
+                rule=cleanCssRule(rule);
+            }
+            rules.push(rule.cssText);
+        }
+    }
+
+    //recursive check
+    if(rule.cssRules)
+    {
+        Object.keys(rule.cssRules).forEach(altRuleKey=>{
+            if(rule.cssRules[altRuleKey] && rule.cssRules[altRuleKey].style && rule.cssRules[altRuleKey].style.backgroundImage && rule.cssRules[altRuleKey].style.backgroundImage.indexOf("url")!==-1){
+                if(listHasImage(imageNameList,rule.cssRules[altRuleKey].style.backgroundImage)){
+                    if(isStripOut){
+                        if(rule.style){
+                            rule=cleanCssRule(rule);
+                        }
+                        if(rule.cssRules){
+                            Object.keys(rule.cssRules).forEach(key=>{
+                                rule.cssRules[key]=cleanCssRule(rule.cssRules[key]);
+                            });
+                        }
+                    }
+                    rules.push(rule.cssText);
+                }
+            }
+        });
+    }
+    return rules;
+}
+
+function cleanCssRule(rule){
+    Object.keys(rule.style).forEach(key=>{
+        if(key!=='backgroundImage' && key!=='background'){
+            rule.style[key]="";
+        }
+    });
+    return rule;
+}
+
+function listHasImage(imageNameList,url){
+    let found=false;
+    imageNameList.forEach(image=>{
+        if(url.indexOf(image)!==-1){
+            found=true;
+        }
+    });
+    return found;
+}
 
 function pullFromServer(){
     let vAssets= document.querySelectorAll("link[href*='/v/'],script[src*='/v/']");
@@ -778,6 +897,10 @@ function bindWhitelistEvent()
       el.addEventListener("click",x=>showFeatureCountries(x));
     });
     
+    let autoLinks=document.getElementsByClassName("btn-grab-css");
+    [].forEach.call(autoLinks, function (el) {
+      el.addEventListener("click",grabRulesClick);
+    });
 }
 
 function filterByDimension(el){
