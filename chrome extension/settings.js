@@ -108,8 +108,11 @@ function getCountryUrls(usHTML){
   usHTML.querySelectorAll(".countrylist-item a").forEach(countryElement=>
   {
     const countryCode=countryElement.attributes.href.value;
-    countryUrls.push(`${BASE_URL}${countryCode}${GET_COUNTRY_SETTINGS_PATH}`);
+    if(countryCode.indexOf(BASE_URL)===-1){
+      countryUrls.push(`${BASE_URL}${countryCode}${GET_COUNTRY_SETTINGS_PATH}`);
+    }
   });
+  console.log(countryUrls)
   return countryUrls;
 }
 
